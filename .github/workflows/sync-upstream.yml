@@ -1,0 +1,41 @@
+name: Sync upstream
+
+# Keeps our fork mirrored with bradhave94/nms-data-extractor.
+# Detection only: the dashboard keeps using its pinned commit until a
+# refresh is deliberately run. Costs zero agent tokens; public repos get
+# unlimited Actions minutes.
+
+on:
+  schedule:
+    - cron: "23 14 * * 1"  # Mondays ~09:23 CDT
+  workflow_dispatch:        # manual "Run workflow" button also works
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Merge upstream into our main
+        id: merge
+        run: |
+          git remote add upstream https://github.com/bradhave94/nms-data-extractor.git
+          git fetch upstream
+          echo "before=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          git checkout main
+          git merge --ff-only upstream/main
+          echo "after=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          git push origin main
+      - name: File an issue when upstream moved
+        if: steps.merge.outputs.before != steps.merge.outputs.after
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create --repo AnonCollab/nms-data-extractor \
+            --title "Upstream NMS data updated" \
+            --body "Upstream has new extracted data (synced $(date -u +%F)). The dashboard pin is unchanged — a refresh runs only on Tacusin's go-ahead."
