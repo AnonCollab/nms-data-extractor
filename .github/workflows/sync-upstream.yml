@@ -28,7 +28,9 @@ jobs:
           git fetch upstream
           echo "before=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git checkout main
-          git merge --ff-only upstream/main
+          # plain merge (not ff-only): our main carries this workflow file,
+          # which upstream doesn't have, so histories have diverged by one commit
+          git merge --no-edit upstream/main || true
           echo "after=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git push origin main
       - name: File an issue when upstream moved
