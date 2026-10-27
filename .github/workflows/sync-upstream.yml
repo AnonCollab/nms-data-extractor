@@ -40,4 +40,4 @@ jobs:
         run: |
           gh issue create --repo AnonCollab/nms-data-extractor \
             --title "Upstream NMS data updated" \
-            --body "Upstream has new extracted data (synced $(date -u +%F)). The dashboard pin is unchanged — a refresh runs only on Tacusin's go-ahead."
+            --body "Upstream has new extracted data (synced $(date -u +%F)). The dashboard pin is unchanged — a refresh runs only on the owner's go-ahead."
